@@ -1,0 +1,582 @@
+{
+  "author": "Deckodex",
+  "authorUrl": "https://deckodex.com",
+  "cloudEndpoint": "https://deckodex.com/mcp",
+  "description": "Gundam Card Game cards, prices, tournament meta, and your Deckodex collection and decks. Look up any card with rulings and TCGplayer, CardTrader and Cardmarket prices, see price trends and market movers, check the tier list and top decklists, validate and price decklists, and — after signing in with your Deckodex account (OAuth) — read your own collection, decks, set completion and collection value.",
+  "homepage": "https://deckodex.com/assistant",
+  "icon": "https://raw.githubusercontent.com/markomatic507/deckodex-mcp/main/icon.png",
+  "identifier": "deckodex",
+  "name": "Deckodex",
+  "tags": [
+    "gundam",
+    "gundam-card-game",
+    "tcg",
+    "trading-card-game",
+    "card-prices",
+    "deckbuilder",
+    "collection-tracker",
+    "tournament-meta"
+  ],
+  "tools": [
+    {
+      "description": "Search the Gundam Card Game catalog. All filters combine with AND. Returns up to 25 cards with their deckodex.com links. Use get_card for full details, effect text and prices of one card. Cards with spoiler: true are pre-release reveals (hand-transcribed, may change before release).",
+      "inputSchema": {
+        "properties": {
+          "colors": {
+            "items": {
+              "enum": [
+                "Blue",
+                "Green",
+                "Red",
+                "White",
+                "Purple"
+              ],
+              "type": "string"
+            },
+            "maxItems": 5,
+            "type": "array"
+          },
+          "costMax": {
+            "maximum": 15,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "costMin": {
+            "maximum": 15,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "keywords": {
+            "description": "Keyword effects, e.g. Blocker, Repair, First Strike",
+            "items": {
+              "maxLength": 40,
+              "type": "string"
+            },
+            "maxItems": 5,
+            "type": "array"
+          },
+          "limit": {
+            "default": 10,
+            "maximum": 25,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "query": {
+            "description": "Free text over name, effect text, card number and traits, e.g. 'Strike Freedom' or 'Blocker'",
+            "maxLength": 200,
+            "type": "string"
+          },
+          "sets": {
+            "description": "Set codes, e.g. GD05 or ST08",
+            "items": {
+              "maxLength": 12,
+              "type": "string"
+            },
+            "maxItems": 10,
+            "type": "array"
+          },
+          "traits": {
+            "items": {
+              "maxLength": 60,
+              "type": "string"
+            },
+            "maxItems": 5,
+            "type": "array"
+          },
+          "types": {
+            "items": {
+              "enum": [
+                "UNIT",
+                "PILOT",
+                "COMMAND",
+                "BASE",
+                "RESOURCE"
+              ],
+              "type": "string"
+            },
+            "maxItems": 5,
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "name": "search_cards"
+    },
+    {
+      "description": "Full details for one card: stats, effect text, keywords, official rulings, every printing with current prices (TCGplayer USD, CardTrader EUR, Cardmarket EUR) and 30/90-day change + all-time high (d30Pct/d90Pct are percentages, e.g. 12.5 = +12.5%; d90Pct may be null for CardTrader until 90 days of history exist), and where it sees tournament play. Cards with spoiler: true are pre-release reveals (hand-transcribed, may change before release).",
+      "inputSchema": {
+        "properties": {
+          "cardNumber": {
+            "description": "Card number, e.g. GD01-001",
+            "type": "string"
+          }
+        },
+        "required": [
+          "cardNumber"
+        ],
+        "type": "object"
+      },
+      "name": "get_card"
+    },
+    {
+      "description": "The tournament meta for a format: every archetype with its tier, meta share, deck count and top-8 count, built from recent tournament results. Defaults to the latest format.",
+      "inputSchema": {
+        "properties": {
+          "format": {
+            "description": "Format code like GD05; omit for the latest",
+            "maxLength": 12,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "name": "get_meta"
+    },
+    {
+      "description": "One archetype in a format: meta share and results, its most-played cards with average copies, and its latest top tournament decklists (use get_meta_deck for a full list).",
+      "inputSchema": {
+        "properties": {
+          "archetype": {
+            "description": "Archetype name or slug, as returned by get_meta",
+            "maxLength": 80,
+            "minLength": 1,
+            "type": "string"
+          },
+          "format": {
+            "description": "Format code like GD05; omit for the latest",
+            "maxLength": 12,
+            "type": "string"
+          }
+        },
+        "required": [
+          "archetype"
+        ],
+        "type": "object"
+      },
+      "name": "get_archetype"
+    },
+    {
+      "description": "A full tournament decklist by id (ids come from get_archetype and buildable_meta_decks): placement, event, price to build, cards, and paste-ready decklist text.",
+      "inputSchema": {
+        "properties": {
+          "deckId": {
+            "maxLength": 64,
+            "minLength": 1,
+            "type": "string"
+          },
+          "source": {
+            "description": "Price source: tcgplayer (USD) or cardtrader (EUR). Omit to use the user's Deckodex preference.",
+            "enum": [
+              "tcgplayer",
+              "cardtrader",
+              "cardmarket"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "deckId"
+        ],
+        "type": "object"
+      },
+      "name": "get_meta_deck"
+    },
+    {
+      "description": "Check a decklist against the deck rules (50-card main deck, max 4 copies, max 2 colors, banlist, sideboard) and price it. One card per line, e.g. '4 Strike Freedom Gundam (GD05-019)' or '4 GD05-019'; a 'Side Deck' line starts the sideboard.",
+      "inputSchema": {
+        "properties": {
+          "decklist": {
+            "maxLength": 65536,
+            "minLength": 1,
+            "type": "string"
+          },
+          "source": {
+            "description": "Price source: tcgplayer (USD) or cardtrader (EUR). Omit to use the user's Deckodex preference.",
+            "enum": [
+              "tcgplayer",
+              "cardtrader",
+              "cardmarket"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "decklist"
+        ],
+        "type": "object"
+      },
+      "name": "validate_deck"
+    },
+    {
+      "description": "The signed-in user's collection. With no arguments: totals and per-set completion. With cardNumbers: how many copies of each card they own (all printings combined).",
+      "inputSchema": {
+        "properties": {
+          "cardNumbers": {
+            "items": {
+              "description": "Card number, e.g. GD01-001",
+              "type": "string"
+            },
+            "maxItems": 50,
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "name": "my_collection"
+    },
+    {
+      "description": "The signed-in user's saved decks. With no arguments: the list. With deckId: that deck's cards, rule checks, which cards they still need to own, and the cost to finish it.",
+      "inputSchema": {
+        "properties": {
+          "deckId": {
+            "maxLength": 64,
+            "minLength": 1,
+            "type": "string"
+          },
+          "source": {
+            "description": "Price source: tcgplayer (USD) or cardtrader (EUR). Omit to use the user's Deckodex preference.",
+            "enum": [
+              "tcgplayer",
+              "cardtrader",
+              "cardmarket"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "name": "my_decks"
+    },
+    {
+      "description": "Tournament decks the signed-in user is closest to completing from their collection, one per archetype, closest first — with how much they own, what's missing and the cost to finish.",
+      "inputSchema": {
+        "properties": {
+          "format": {
+            "description": "Format code like GD05; omit for the latest",
+            "maxLength": 12,
+            "type": "string"
+          },
+          "limit": {
+            "default": 5,
+            "maximum": 10,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "source": {
+            "description": "Price source: tcgplayer (USD) or cardtrader (EUR). Omit to use the user's Deckodex preference.",
+            "enum": [
+              "tcgplayer",
+              "cardtrader",
+              "cardmarket"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "name": "buildable_meta_decks"
+    },
+    {
+      "description": "Save a decklist as a NEW deck in the signed-in user's Deckodex account (never overwrites an existing deck). One card per line, e.g. '4 GD05-019'. Deckodex Pro.",
+      "inputSchema": {
+        "properties": {
+          "decklist": {
+            "maxLength": 65536,
+            "minLength": 1,
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 80,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "decklist"
+        ],
+        "type": "object"
+      },
+      "name": "save_deck"
+    },
+    {
+      "description": "Change owned counts in the signed-in user's collection. mode 'add' adds copies; mode 'set' sets the exact count (0 removes). Counts clamp to 0–99. Up to 20 rows per call; each row reports before/after, and a bad row doesn't block the others. printId picks a specific printing from get_card (default: its standard released printing). Deckodex Pro.",
+      "inputSchema": {
+        "properties": {
+          "changes": {
+            "items": {
+              "properties": {
+                "cardNumber": {
+                  "description": "Card number, e.g. GD01-001",
+                  "type": "string"
+                },
+                "count": {
+                  "maximum": 99,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "mode": {
+                  "enum": [
+                    "add",
+                    "set"
+                  ],
+                  "type": "string"
+                },
+                "printId": {
+                  "maxLength": 40,
+                  "minLength": 1,
+                  "type": "string"
+                }
+              },
+              "required": [
+                "cardNumber",
+                "mode",
+                "count"
+              ],
+              "type": "object"
+            },
+            "maxItems": 20,
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "changes"
+        ],
+        "type": "object"
+      },
+      "name": "update_collection"
+    },
+    {
+      "description": "Add cards to one of the signed-in user's card lists (wishlists, trade binders…). Pass listId from a previous result, or listName — an existing list with that name is reused, otherwise a new one is created. printId picks a specific printing from get_card (default: its standard released printing). Up to 20 items per call. Deckodex Pro.",
+      "inputSchema": {
+        "properties": {
+          "items": {
+            "items": {
+              "properties": {
+                "cardNumber": {
+                  "description": "Card number, e.g. GD01-001",
+                  "type": "string"
+                },
+                "count": {
+                  "maximum": 99,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "printId": {
+                  "maxLength": 40,
+                  "minLength": 1,
+                  "type": "string"
+                }
+              },
+              "required": [
+                "cardNumber",
+                "count"
+              ],
+              "type": "object"
+            },
+            "maxItems": 20,
+            "minItems": 1,
+            "type": "array"
+          },
+          "listId": {
+            "maxLength": 64,
+            "minLength": 1,
+            "type": "string"
+          },
+          "listName": {
+            "maxLength": 80,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "type": "object"
+      },
+      "name": "add_to_list"
+    },
+    {
+      "description": "Biggest price gainers and losers across the Gundam Card Game market over the last 7 days or month, by percentage or by absolute change. Prices in the user's preferred currency unless source is given. changePct is a percentage (e.g. 12.5 = +12.5%), matching get_card's convention.",
+      "inputSchema": {
+        "properties": {
+          "by": {
+            "default": "pct",
+            "description": "pct = percentage change, abs = change in money",
+            "enum": [
+              "pct",
+              "abs"
+            ],
+            "type": "string"
+          },
+          "limit": {
+            "default": 5,
+            "maximum": 10,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "source": {
+            "description": "Price source: tcgplayer (USD) or cardtrader (EUR). Omit to use the user's Deckodex preference.",
+            "enum": [
+              "tcgplayer",
+              "cardtrader",
+              "cardmarket"
+            ],
+            "type": "string"
+          },
+          "window": {
+            "default": "7D",
+            "enum": [
+              "7D",
+              "1M"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "name": "market_movers"
+    },
+    {
+      "description": "The most valuable Gundam cards overall, in one set (slug or set code, e.g. gd05) or in one rarity tier, most expensive first, with 30/90-day change and Cardmarket's price alongside.",
+      "inputSchema": {
+        "properties": {
+          "limit": {
+            "default": 10,
+            "maximum": 25,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "scope": {
+            "default": "all",
+            "enum": [
+              "all",
+              "set",
+              "rarity"
+            ],
+            "type": "string"
+          },
+          "slug": {
+            "description": "Set slug or set code (e.g. gd05), or rarity slug or code (e.g. lr-plus or LR+)",
+            "maxLength": 60,
+            "type": "string"
+          },
+          "source": {
+            "description": "Price source: tcgplayer (USD) or cardtrader (EUR). Omit to use the user's Deckodex preference.",
+            "enum": [
+              "tcgplayer",
+              "cardtrader",
+              "cardmarket"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "name": "price_list"
+    },
+    {
+      "description": "How complete the signed-in user's collection is per set — unique cards, playsets (4 of each) or master set (every printing) — and what it costs to finish, using their saved Deckodex targets. With set: that set's rarity breakdown.",
+      "inputSchema": {
+        "properties": {
+          "mode": {
+            "description": "Omit to use the user's Deckodex setting",
+            "enum": [
+              "unique",
+              "playset",
+              "master"
+            ],
+            "type": "string"
+          },
+          "set": {
+            "description": "Set code, e.g. GD05",
+            "maxLength": 12,
+            "type": "string"
+          },
+          "source": {
+            "description": "Price source: tcgplayer (USD) or cardtrader (EUR). Omit to use the user's Deckodex preference.",
+            "enum": [
+              "tcgplayer",
+              "cardtrader",
+              "cardmarket"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "name": "my_set_completion"
+    },
+    {
+      "description": "What the signed-in user's Gundam collection is worth now and how it changed over the last 7 days and month. Deckodex Pro adds longer ranges (3M, 6M, 1Y, ALL), the recorded value history, value by set, top holdings and the biggest gainers/losers in their binder.",
+      "inputSchema": {
+        "properties": {
+          "mode": {
+            "default": "holdings",
+            "description": "holdings = today's cards at past prices; recorded = the value Deckodex actually recorded each night (Pro)",
+            "enum": [
+              "holdings",
+              "recorded"
+            ],
+            "type": "string"
+          },
+          "range": {
+            "default": "1M",
+            "enum": [
+              "7D",
+              "1M",
+              "3M",
+              "6M",
+              "1Y",
+              "ALL"
+            ],
+            "type": "string"
+          },
+          "source": {
+            "description": "Price source: tcgplayer (USD) or cardtrader (EUR). Omit to use the user's Deckodex preference.",
+            "enum": [
+              "tcgplayer",
+              "cardtrader",
+              "cardmarket"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "name": "my_collection_value"
+    },
+    {
+      "description": "Deckodex Pro: the single cards that move the signed-in user closest to completing current tournament decks per money spent, given what they already own — with how many copies to buy, the cost, and which decks each one advances. fromPct/toPct are percentages (0-100) of a deck's copies the user owns before/after buying.",
+      "inputSchema": {
+        "properties": {
+          "format": {
+            "description": "Format code like GD05; omit for the latest",
+            "maxLength": 12,
+            "type": "string"
+          },
+          "limit": {
+            "default": 5,
+            "maximum": 10,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "source": {
+            "description": "Price source: tcgplayer (USD) or cardtrader (EUR). Omit to use the user's Deckodex preference.",
+            "enum": [
+              "tcgplayer",
+              "cardtrader",
+              "cardmarket"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "name": "best_buys"
+    }
+  ],
+  "version": "1.1.1"
+}
