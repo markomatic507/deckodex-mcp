@@ -31,7 +31,7 @@ Setup guide: https://deckodex.com/assistant
 
 - "What are the top decks in GD05 right now, and what does the best list cost to build?"
 - "Which meta decks am I closest to building from my collection, and what's missing?"
-- "Is Strike Freedom Gundam (GD05-019) going up in price? Show me every printing."
+- "Is Strike Freedom Gundam (GD05-002) going up in price? Show me every printing."
 - "Check this decklist for legality and price it."
 - "What's my collection worth, and what's the cheapest way to finish GD04 as playsets?"
 
