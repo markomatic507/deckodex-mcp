@@ -3,8 +3,12 @@
   "name": "com.deckodex/deckodex",
   "title": "Deckodex",
   "description": "Gundam Card Game cards, prices, tournament meta, and your Deckodex collection and decks.",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "websiteUrl": "https://deckodex.com/assistant",
+  "repository": {
+    "url": "https://github.com/markomatic507/deckodex-mcp",
+    "source": "github"
+  },
   "icons": [
     {
       "src": "https://deckodex.com/icon.svg",
