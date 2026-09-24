@@ -23,6 +23,8 @@ Every answer links back to the matching page on [deckodex.com](https://deckodex.
 
 - **Claude:** Settings → Connectors → Add custom connector → paste the URL.
 - **ChatGPT:** Settings → Apps & Connectors → Create → paste the URL.
+- **Cline:** MCP Servers → Remote Servers → add `https://deckodex.com/mcp` (Streamable HTTP), then Authenticate. Details: [llms-install.md](llms-install.md).
+- **Cursor:** add `{"mcpServers": {"deckodex": {"url": "https://deckodex.com/mcp"}}}` to `mcp.json`.
 - **Other MCP clients:** add a remote (Streamable HTTP) server with the URL.
 
 Setup guide: https://deckodex.com/assistant
